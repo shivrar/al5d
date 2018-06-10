@@ -1,0 +1,19 @@
+<launch>
+
+    <!-- Disable launching gazebo -->
+  <arg name="gazebo_sim" default="true"/>
+
+  <!-- basic arm model -->
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find arm_description)/models/al5d.urdf.xacro'"/>
+
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+     <arg name="verbose" value="true"/>
+  </include>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="30.0" />
+  </node>
+
+  <node name="spawn_base" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model lynxmotion_al5d"/>
+</launch>
