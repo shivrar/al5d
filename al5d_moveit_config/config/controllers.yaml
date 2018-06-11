@@ -1,0 +1,11 @@
+controller_manager_ns: /
+controller_list:
+  - name: arm_controller
+    action_ns: follow_joint_trajectory
+    type: FollowJointTrajectory
+    joints:
+      - al5d_joint_1
+      - al5d_joint_2
+      - al5d_joint_3
+      - al5d_joint_4
+      - al5d_gripper
