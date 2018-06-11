@@ -1,0 +1,11 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: arm_description
+    relative_path: models/al5d.urdf.xacro
+    xacro_args: "--inorder "
+  SRDF:
+    relative_path: config/lynxmotion_al5d.srdf
+  CONFIG:
+    author_name: Shivan Ramdhanie
+    author_email: s_ram_dhanie@hotmail.com
+    generated_timestamp: 1528746228
