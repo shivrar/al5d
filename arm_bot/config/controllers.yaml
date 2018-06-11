@@ -1,0 +1,10 @@
+arm_controller:
+  type: "position_controllers/JointTrajectoryController"
+  joints:
+    - al5d_joint_1
+    - al5d_joint_2
+    - al5d_joint_3
+    - al5d_joint_4
+    - al5d_gripper
+
+  allow_partial_joints_goal: True

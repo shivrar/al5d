@@ -13,7 +13,6 @@
   <property name="link4_length" value="0.032" />
   <property name="gripper_offset" value="0.016" />
 
-  <!--TODO add the additional wrist joint and link for the al5d 5DOF version-->
   <xacro:macro name="lynxmotion_al5d" params="prefix parent_link *origin">
     <!-- attach -->
     <joint name="arm_base_joint" type="fixed">
@@ -184,12 +183,66 @@
       <axis xyz="0 0 1"/>
       <limit lower="-${M_PI/2}" upper="${M_PI/2}" effort="0" velocity="6.98"/>
     </joint>
-    <joint name="${prefix}gripper" type="fixed">
+    <joint name="${prefix}gripper" type="revolute">
       <origin xyz="${link4_length + gripper_offset} 0 0" rpy="0 0 0"/>
       <parent link="${prefix}link_4"/>
       <child link="${prefix}gripper"/>
-      <axis xyz="0 0 1"/>
+      <axis xyz="1 0 0"/>
       <limit lower="-${M_PI/2}" upper="${M_PI/2}" effort="0" velocity="6.98"/>
     </joint>
+
+    <transmission name="${prefix}joint_1">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_1">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor1">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="${prefix}joint_2">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_2">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor2">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="${prefix}joint_3">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_3">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor3">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="${prefix}joint_4">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}joint_4">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor4">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <transmission name="${prefix}gripper">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="${prefix}gripper">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="motor5">
+        <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+    <gazebo>
+      <plugin name="control" filename="libgazebo_ros_control.so"/>
+    </gazebo>
   </xacro:macro>
 </robot>

@@ -7,6 +7,10 @@
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder '$(find arm_description)/models/al5d.urdf.xacro'"/>
 
+  <rosparam file="$(find arm_bot)/config/controllers.yaml" command="load"/>
+
+  <node name="controller_spawn" pkg="controller_manager" type="spawner" args="arm_controller"/>
+
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
      <arg name="verbose" value="true"/>
   </include>
