@@ -40,6 +40,7 @@ namespace arm_bot{
       ros::NodeHandle private_nh_;
       ros::Subscriber joint_sub_;
       tf::TransformListener listener_;
+      tf::TransformBroadcaster odom_map_br_;
   };
 };  // namespace arm_bot
 
