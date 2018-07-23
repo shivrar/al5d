@@ -20,4 +20,8 @@
   </node>
 
   <node name="spawn_base" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model lynxmotion_al5d"/>
+
+  <node name="arm_tele_op" pkg="arm_bot" type="arm_tele_op" />
+
+  <param name="use_sim_time" type="bool" value="false" />
 </launch>
