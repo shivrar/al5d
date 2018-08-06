@@ -15,7 +15,6 @@ catkin_package(
   INCLUDE_DIRS include
   LIBRARIES arm_bot
   CATKIN_DEPENDS roscpp rospy tf
-  DEPENDS system_lib
 )
 
 include_directories(

@@ -47,15 +47,16 @@ int main(int argc, char** argv)
       {
         ROS_INFO("Successful connection");
 
-        std::string command =  "​​0 P1500 T2000";
-        std::string command2 = "​​#1 P1500 T2000";
-        std::string command3 = "​​#2 P1500 T2000";
-        std::string command4 = "​​# P1500 T2000";
-        std::string command5 = "​​#0 P1500 T2000";
-        std::string command6 = "​​#0 P1500 T2000";
+        /*As noted in the ssc-32u manual:
+          "The first positioning command should be a normal "# <ch> P <pw>" command.
+           Because the controller doesn't know where the servo is positioned on power­up, it will ignore
+           speed and time commands until the first normal command has been received."
+           So initial command is to first send the first normal command and then center all the servos for the IK stuff
+        */
 
+        std::string command =  "#​​0P1500 #1P1500 #2P1500 #3P1500 #4P1500 #5P1500\r";
 
-        test_serial.write(command + "\r");
+        test_serial.write(command);
 
         test_serial.write("Q\r");
 
