@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   control_msgs
   actionlib
   actionlib_msgs
+  sensor_msgs
 )
 
 generate_messages(

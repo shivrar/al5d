@@ -9,11 +9,10 @@
 #include <ros/console.h>
 #include <math.h>
 #include <vector>
+#include <sensor_msgs/JointState.h>
 #include <actionlib/server/simple_action_server.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
-
-
-#include "serial/serial.h"
+#include <serial/serial.h>
 
 
 
@@ -30,7 +29,12 @@ namespace arm_hw_integration{
 
       void InitialiseSubscribers();
 
+      void InitialisePublishers();
+
       void executeCB(const control_msgs::FollowJointTrajectoryGoalConstPtr &goal);
+
+      int convertJointAngleToPosition(int jointAngle);
+
 
     private:
       ros::NodeHandle private_nh_;
@@ -45,8 +49,11 @@ namespace arm_hw_integration{
       std::string port_;
       int baud_;
       serial::Timeout timeout_;
-
       std::unique_ptr<serial::Serial> serial_;
+
+      sensor_msgs::JointState current_states_;
+      ros::Publisher joint_pub_;
+      ros::Timer joint_timer_;
 
   };
 };

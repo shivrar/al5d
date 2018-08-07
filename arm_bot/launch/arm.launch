@@ -1,7 +1,7 @@
 <launch>
 
     <!-- Disable launching gazebo -->
-  <arg name="gazebo_sim" default="true"/>
+  <arg name="gazebo_sim" default="false"/>
 
   <!-- basic arm model -->
 
@@ -11,7 +11,7 @@
 
   <node name="controller_spawn" pkg="controller_manager" type="spawner" args="arm_controller"/>
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(arg gazebo_sim)">
      <arg name="verbose" value="true"/>
   </include>
 
@@ -19,9 +19,10 @@
     <param name="publish_frequency" type="double" value="30.0" />
   </node>
 
-  <node name="spawn_base" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model lynxmotion_al5d"/>
+  <node name="spawn_base" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model lynxmotion_al5d"
+        if="$(arg gazebo_sim)"/>
 
-  <!--<node name="arm_tele_op" pkg="arm_bot" type="arm_tele_op" />-->
+  <node name="arm_server" pkg="arm_hw_integration" type="serial_test" unless="$(arg gazebo_sim)"/>
 
-  <param name="use_sim_time" type="bool" value="false" />
+  <param name="use_sim_time" type="bool" value="true" if="$(arg gazebo_sim)"/>
 </launch>
