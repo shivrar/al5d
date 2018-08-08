@@ -11,18 +11,20 @@
 
   <node name="controller_spawn" pkg="controller_manager" type="spawner" args="arm_controller"/>
 
-  <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(arg gazebo_sim)">
-     <arg name="verbose" value="true"/>
-  </include>
+  <node name="arm_server" pkg="arm_hw_integration" type="serial_test" unless="$(arg gazebo_sim)"/>
 
   <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher">
     <param name="publish_frequency" type="double" value="30.0" />
   </node>
 
+  <include file="$(find gazebo_ros)/launch/empty_world.launch" if="$(arg gazebo_sim)">
+     <arg name="verbose" value="true"/>
+  </include>
+
   <node name="spawn_base" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model lynxmotion_al5d"
         if="$(arg gazebo_sim)"/>
 
-  <node name="arm_server" pkg="arm_hw_integration" type="serial_test" unless="$(arg gazebo_sim)"/>
+
 
   <param name="use_sim_time" type="bool" value="true" if="$(arg gazebo_sim)"/>
 </launch>

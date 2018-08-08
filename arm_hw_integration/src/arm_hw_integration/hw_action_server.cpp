@@ -3,10 +3,12 @@
 namespace arm_hw_integration{
 
   AL5DArm::AL5DArm(std::string name):private_nh_("~"),
-    as_(private_nh_, name, boost::bind(&AL5DArm::executeCB, this, _1), false),
+    as_(ros::NodeHandle(), name, boost::bind(&AL5DArm::executeCB, this, _1), false),
     action_name_(name)
   {
+    as_.start();
     InitialisePublishers();
+    InitialiseTimers();
     InitialiseSerial();
 
 
@@ -27,6 +29,22 @@ namespace arm_hw_integration{
   {
     joint_pub_ = ros::NodeHandle().advertise<sensor_msgs::JointState>("joint_states", 10);
   };
+
+  void AL5DArm::InitialiseTimers()
+  {
+    double period;
+    private_nh_.param("publish_period", period, 0.025);
+    pub_period_ = ros::Duration(period);
+
+    joint_timer_ = private_nh_.createTimer(pub_period_, boost::bind(&AL5DArm::timerCB, this, _1));
+  };
+
+  void AL5DArm::timerCB(const ros::TimerEvent&)
+  {
+    current_states_.header.stamp = ros::Time::now();
+    joint_pub_.publish(current_states_);
+  };
+
 
   int AL5DArm::convertJointAngleToPosition(int jointAngle)
   {
@@ -58,7 +76,7 @@ namespace arm_hw_integration{
            So initial command is to first send the first normal command and then center all the servos for the IK stuff
         */
 
-        ros::Duration(3).sleep();
+//        ros::Duration(3).sleep();
 
         std::string command =  "#​​0P1500 #1P1500 #2P1500 #3P1500 #4P1500 #5P1500\r";
 
@@ -71,7 +89,7 @@ namespace arm_hw_integration{
         std::string result = serial_->read(command.length()+1);
 
         std::vector<std::string> joint_names = {
-          "al5d_joint_1,",
+          "al5d_joint_1",
           "al5d_joint_2",
           "al5d_joint_3",
           "al5d_joint_4",
@@ -80,6 +98,8 @@ namespace arm_hw_integration{
         if(result == "+")
         {
           //TODO: CONVERT THESE TO PRIVATE  MEMBER VARIABLES AND REPUBLISH AT A RATE
+
+//          TODO Upon each movement Use the query pulse width to get the the actual binaries for the servos and get the joint angles upon success
           current_states_.name = joint_names;
           current_states_.position.assign(joint_names.size(), 0.0);
 
@@ -89,7 +109,7 @@ namespace arm_hw_integration{
           current_states_.position[3] = 0.0;
           current_states_.position[4] = 0.0;
           current_states_.header.stamp = ros::Time::now();
-          joint_pub_.publish(msg);
+          joint_pub_.publish(current_states_);
         }
 
       }
@@ -101,7 +121,7 @@ namespace arm_hw_integration{
 
     catch (serial::IOException& e)
     {
-      ROS_ERROR("serial exception: %s, thrown, serial port does not exist", e.what());
+      ROS_ERROR("serial exception: (%s), thrown. Serial port does not exist", e.what());
       ros::shutdown();
     }
 

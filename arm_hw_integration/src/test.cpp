@@ -23,7 +23,8 @@ int main(int argc, char** argv)
 {
     ros::init(argc, argv, "arm_hw_integration_node");
 
-    arm_hw_integration::AL5DArm arm("al5d");
+    //Server namespace should match properly
+    arm_hw_integration::AL5DArm arm("arm_controller");
 //    ros::NodeHandle nh;
 //
 //    enumerate_ports();

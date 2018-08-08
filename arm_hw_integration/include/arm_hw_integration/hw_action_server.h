@@ -31,7 +31,11 @@ namespace arm_hw_integration{
 
       void InitialisePublishers();
 
+      void InitialiseTimers();
+
       void executeCB(const control_msgs::FollowJointTrajectoryGoalConstPtr &goal);
+
+      void timerCB(const ros::TimerEvent&);
 
       int convertJointAngleToPosition(int jointAngle);
 
@@ -48,6 +52,7 @@ namespace arm_hw_integration{
       //Serial stuff
       std::string port_;
       int baud_;
+      ros::Duration pub_period_;
       serial::Timeout timeout_;
       std::unique_ptr<serial::Serial> serial_;
 
