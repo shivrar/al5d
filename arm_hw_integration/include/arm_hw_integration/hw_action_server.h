@@ -12,14 +12,24 @@
 #include <sensor_msgs/JointState.h>
 #include <actionlib/server/simple_action_server.h>
 #include <control_msgs/FollowJointTrajectoryAction.h>
+#include <trajectory_msgs/JointTrajectoryPoint.h>
 #include <serial/serial.h>
-
 
 
 namespace arm_hw_integration{
   class AL5DArm{
 
+    //TODO: Do an enumeration for the joint types etc to keep the position consistent in the arrays and other referencing situations
+
     public:
+      enum class AL5DJoint
+      {
+        al5d_joint_1 = 0,
+        al5d_joint_2 = 1,
+        al5d_joint_3 = 2,
+        al5d_joint_4 = 3,
+        al5d_gripper = 4
+      };
 
       AL5DArm(std::string name);
 

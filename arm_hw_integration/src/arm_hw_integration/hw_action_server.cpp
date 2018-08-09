@@ -11,8 +11,6 @@ namespace arm_hw_integration{
     InitialiseTimers();
     InitialiseSerial();
 
-
-
   };
 
   AL5DArm::~AL5DArm()
@@ -76,15 +74,13 @@ namespace arm_hw_integration{
            So initial command is to first send the first normal command and then center all the servos for the IK stuff
         */
 
-//        ros::Duration(3).sleep();
+        //ros::Duration(3).sleep();
 
         std::string command =  "#​​0P1500 #1P1500 #2P1500 #3P1500 #4P1500 #5P1500\r";
 
         serial_->write(command);
 
         serial_->write("Q\r");
-
-//        usleep(500);
 
         std::string result = serial_->read(command.length()+1);
 
@@ -95,11 +91,19 @@ namespace arm_hw_integration{
           "al5d_joint_4",
           "al5d_gripper"};
 
-        if(result == "+")
+        while(result == "+")
         {
-          //TODO: CONVERT THESE TO PRIVATE  MEMBER VARIABLES AND REPUBLISH AT A RATE
+          ros::Duration(0.0025).sleep();
+          serial_->write("Q\r");
+          result = serial_->read(command.length()+1);
+        }
 
-//          TODO Upon each movement Use the query pulse width to get the the actual binaries for the servos and get the joint angles upon success
+        if (result == ".")
+        {
+          //TODO Upon each movement Use the query pulse width to get the the actual binaries for the servos and get the joint angles upon success
+
+          //TODO: Query the pulse width using the QP <arg> <cr> for ssc-32u board -> issues with this since the binary format in not ASCII readable, will use virtual joints for the time being
+
           current_states_.name = joint_names;
           current_states_.position.assign(joint_names.size(), 0.0);
 
@@ -121,7 +125,7 @@ namespace arm_hw_integration{
 
     catch (serial::IOException& e)
     {
-      ROS_ERROR("serial exception: (%s), thrown. Serial port does not exist", e.what());
+      ROS_ERROR("serial exception: (%s), thrown. Serial port not connected", e.what());
       ros::shutdown();
     }
 
@@ -129,6 +133,33 @@ namespace arm_hw_integration{
 
   void AL5DArm::executeCB(const control_msgs::FollowJointTrajectoryGoalConstPtr &goal)
   {
+    std::vector<std::string> joint_names = goal->trajectory.joint_names;
+    std::vector<trajectory_msgs::JointTrajectoryPoint> joint_points = goal->trajectory.points;
+    std::vector<trajectory_msgs::JointTrajectoryPoint>::iterator point_iter = joint_points.begin();
 
+    while(point_iter != joint_points.end())
+    {
+      for(int i = 0; i < joint_names.size(); i++ )
+      {
+        ROS_INFO("Joint Name: %s, Joint Positions: %f, Joint Velocities: %f", joint_names[i].c_str(),
+                  point_iter->positions[i], point_iter->velocities[i]);
+        //TODO : Do the proper mapping of the joint states to the current states member variable
+        switch(joint_names[i])
+          case "al5d_joint_1"
+          //current_states_.position[i] = point_iter->positions[i];
+
+      }
+
+      feedback_.header.stamp = ros::Time::now();
+      feedback_.joint_names = joint_names;
+      feedback_.desired = *point_iter;
+
+      as_.publishFeedback(feedback_);
+
+      point_iter++;
+    }
+
+    result_.error_code = 0;
+    as_.setSucceeded(result_);
   };
 }
