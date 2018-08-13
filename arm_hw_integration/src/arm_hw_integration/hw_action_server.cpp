@@ -1,5 +1,21 @@
 #include "arm_hw_integration/hw_action_server.h"
 
+//Helper template for mapping values
+
+template<typename tVal>
+tVal map_value(std::pair<tVal,tVal> a, std::pair<tVal, tVal> b, tVal inVal)
+{
+  tVal inValNorm = inVal - a.first;
+  tVal aUpperNorm = a.second - a.first;
+  tVal normPosition = inValNorm / aUpperNorm;
+
+  tVal bUpperNorm = b.second - b.first;
+  tVal bValNorm = normPosition * bUpperNorm;
+  tVal outVal = b.first + bValNorm;
+
+  return outVal;
+}
+
 namespace arm_hw_integration{
 
   AL5DArm::AL5DArm(std::string name):private_nh_("~"),
@@ -91,6 +107,12 @@ namespace arm_hw_integration{
           "al5d_joint_4",
           "al5d_gripper"};
 
+        joints_["al5d_joint_1"] = AL5DJoints::al5d_joint_1;
+        joints_["al5d_joint_2"] = AL5DJoints::al5d_joint_2;
+        joints_["al5d_joint_3"] = AL5DJoints::al5d_joint_3;
+        joints_["al5d_joint_4"] = AL5DJoints::al5d_joint_4;
+        joints_["al5d_gripper"] = AL5DJoints::al5d_gripper;
+
         while(result == "+")
         {
           ros::Duration(0.0025).sleep();
@@ -136,19 +158,168 @@ namespace arm_hw_integration{
     std::vector<std::string> joint_names = goal->trajectory.joint_names;
     std::vector<trajectory_msgs::JointTrajectoryPoint> joint_points = goal->trajectory.points;
     std::vector<trajectory_msgs::JointTrajectoryPoint>::iterator point_iter = joint_points.begin();
+    std::map<std::string, AL5DArm::AL5DJoints>::iterator iter;
+    bool success = true;
+
 
     while(point_iter != joint_points.end())
     {
+      std::string command0 = "#0";
+      std::string command1 = "#1";
+      std::string command2 = "#2";
+      std::string command3 = "#3";
+      std::string command4 = "#5";
+      std::string command_to_send = "";
+
+//      if (as_.isPreemptRequested() || !ros::ok())
+//      {
+//        as_.setPreempted();
+//        success = false;
+//        break;
+//      }
+
       for(int i = 0; i < joint_names.size(); i++ )
       {
-        ROS_INFO("Joint Name: %s, Joint Positions: %f, Joint Velocities: %f", joint_names[i].c_str(),
-                  point_iter->positions[i], point_iter->velocities[i]);
-        //TODO : Do the proper mapping of the joint states to the current states member variable
-        switch(joint_names[i])
-          case "al5d_joint_1"
-          //current_states_.position[i] = point_iter->positions[i];
+        //ROS_INFO("Joint Name: %s, Joint Positions: %f, Joint Velocities: %f", joint_names[i].c_str(),
+        //point_iter->positions[i], point_iter->velocities[i]);
+
+        //See if the joint exists in the standard joints for the arm, if it isn't just go to the next joint in the list
+        iter = joints_.find(joint_names[i]);
+        if (iter == joints_.end())
+        {
+          //TODO: If an invalid joint is found I should remove the corresponding data for it
+          //however for the time being I will just ignore it and only update the proper joints to the tf tree using the current_states_
+          //This leads to some ugly branching logic so TODO: try to find a cleaner way to do this
+          ROS_ERROR("Unknown joint found: %s", joint_names[i].c_str());
+          continue;
+        }
+
+        switch(iter->second)
+        {
+          // The integers cast represents the channel number for eg. static_cast<int>(AL5DJoints::al5d_joint_1) maps to channel "0"
+//          TODO: Address the issue where some speeds generated are to large and causing jerky motion, will tackle in a future PR
+          case AL5DJoints::al5d_joint_1:
+          {
+            std::pair<double,double> a(M_PI/2,-M_PI/2), b(500,2500);
+            std::string speed;
+
+            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
+               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            {
+              speed = "";
+            }
+            else
+            {
+              speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
+            }
+
+            command0 = command0 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+//            ROS_INFO("Command 0: %s", command0.c_str());
+            current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_1)] = point_iter->positions[i];
+            break;
+          }
+          case AL5DJoints::al5d_joint_2:
+          {
+            std::pair<double,double> a(0,M_PI), b(500,2500);
+            std::string speed;
+
+            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
+               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            {
+              speed = "";
+            }
+            else
+            {
+              speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
+            }
+
+            command1 = command1 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+//            ROS_INFO("Command 1: %s", command1.c_str());
+            current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_2)] = point_iter->positions[i];
+            break;
+          }
+          case AL5DJoints::al5d_joint_3:
+          {
+            std::pair<double,double> a(0,-M_PI), b(500,2500);
+            std::string speed;
+
+            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
+               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            {
+              speed = "";
+            }
+            else
+            {
+              speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
+            }
+
+            command2 = command2 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+//            ROS_INFO("Command 2: %s", command2.c_str());
+            current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_3)] = point_iter->positions[i];
+            break;
+          }
+          case AL5DJoints::al5d_joint_4:
+          {
+            std::pair<double,double> a(-M_PI/2,M_PI/2), b(500,2500);
+            std::string speed;
+
+            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
+               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            {
+              speed = "";
+            }
+            else
+            {
+              speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
+            }
+
+            command3 = command3 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+//            ROS_INFO("Command 3: %s", command3.c_str());
+            current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_4)] = point_iter->positions[i];
+            break;
+          }
+          case AL5DJoints::al5d_gripper:
+          {
+            std::pair<double,double> a(M_PI/2,-M_PI/2), b(500,2500);
+            std::string speed;
+
+            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
+               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            {
+              speed = "";
+            }
+            else
+            {
+              speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
+            }
+//          TODO: Address the issue with the gripper being mismatched with it's channel
+            command4 = command4 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+//            ROS_INFO("Command 4: %s", command4.c_str());
+            current_states_.position[static_cast<int>(AL5DJoints::al5d_gripper)] = point_iter->positions[i];
+            break;
+          }
+        }
+
 
       }
+
+      command_to_send = command0+" "+command1+" "+command2+" "+command3+" "+command4+"\r";
+
+      ROS_INFO("Final command: %s", command_to_send.c_str());
+
+      serial_->write(command_to_send);
+
+//      serial_->write("Q\r");
+
+//      std::string result = serial_->read(command_to_send.length()+1);
+
+//      while(result == "+")
+//      {
+////        usleep(50);
+//        serial_->write("Q\r");
+//        result = serial_->read(command_to_send.length()+1);
+//        ROS_INFO("Result, %s \n", result.c_str());
+//      }
 
       feedback_.header.stamp = ros::Time::now();
       feedback_.joint_names = joint_names;
@@ -156,10 +327,18 @@ namespace arm_hw_integration{
 
       as_.publishFeedback(feedback_);
 
+      ros::Duration(0.00005).sleep();
+
       point_iter++;
     }
-
+//TODO: See to fix up this preemption properly
     result_.error_code = 0;
     as_.setSucceeded(result_);
+//    if(success)
+//    {
+//      result_.error_code = 0;
+//      as_.setSucceeded(result_);
+//    }
+
   };
 }

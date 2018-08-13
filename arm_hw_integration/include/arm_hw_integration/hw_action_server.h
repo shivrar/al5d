@@ -22,13 +22,13 @@ namespace arm_hw_integration{
     //TODO: Do an enumeration for the joint types etc to keep the position consistent in the arrays and other referencing situations
 
     public:
-      enum class AL5DJoint
+      enum class AL5DJoints
       {
         al5d_joint_1 = 0,
         al5d_joint_2 = 1,
         al5d_joint_3 = 2,
         al5d_joint_4 = 3,
-        al5d_gripper = 4
+        al5d_gripper = 5
       };
 
       AL5DArm(std::string name);
@@ -69,6 +69,8 @@ namespace arm_hw_integration{
       sensor_msgs::JointState current_states_;
       ros::Publisher joint_pub_;
       ros::Timer joint_timer_;
+      std::map<std::string, AL5DArm::AL5DJoints> joints_;
+
 
   };
 };
