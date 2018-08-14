@@ -28,7 +28,8 @@ namespace arm_hw_integration{
         al5d_joint_2 = 1,
         al5d_joint_3 = 2,
         al5d_joint_4 = 3,
-        al5d_gripper = 5
+        al5d_gripper = 5,
+        al5d_end_effector = 4
       };
 
       AL5DArm(std::string name);
@@ -70,6 +71,8 @@ namespace arm_hw_integration{
       ros::Publisher joint_pub_;
       ros::Timer joint_timer_;
       std::map<std::string, AL5DArm::AL5DJoints> joints_;
+
+      int max_speed_;
 
 
   };

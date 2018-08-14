@@ -22,6 +22,8 @@ namespace arm_hw_integration{
     as_(ros::NodeHandle(), name, boost::bind(&AL5DArm::executeCB, this, _1), false),
     action_name_(name)
   {
+    //Make this a param and or reconfigurable
+    max_speed_ = 1000;
     as_.start();
     InitialisePublishers();
     InitialiseTimers();
@@ -171,17 +173,15 @@ namespace arm_hw_integration{
       std::string command4 = "#5";
       std::string command_to_send = "";
 
-//      if (as_.isPreemptRequested() || !ros::ok())
-//      {
-//        as_.setPreempted();
-//        success = false;
-//        break;
-//      }
+      if (as_.isPreemptRequested() || !ros::ok())
+      {
+        as_.setPreempted();
+        success = false;
+        break;
+      }
 
       for(int i = 0; i < joint_names.size(); i++ )
       {
-        //ROS_INFO("Joint Name: %s, Joint Positions: %f, Joint Velocities: %f", joint_names[i].c_str(),
-        //point_iter->positions[i], point_iter->velocities[i]);
 
         //See if the joint exists in the standard joints for the arm, if it isn't just go to the next joint in the list
         iter = joints_.find(joint_names[i]);
@@ -197,16 +197,20 @@ namespace arm_hw_integration{
         switch(iter->second)
         {
           // The integers cast represents the channel number for eg. static_cast<int>(AL5DJoints::al5d_joint_1) maps to channel "0"
-//          TODO: Address the issue where some speeds generated are to large and causing jerky motion, will tackle in a future PR
+          //TODO: Address the issue where some speeds generated are to large and causing jerky motion, will tackle in a future PR
           case AL5DJoints::al5d_joint_1:
           {
             std::pair<double,double> a(M_PI/2,-M_PI/2), b(500,2500);
             std::string speed;
-
-            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
-               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            //TODO These logic for these velocities got very funky fast but will have to look at it at a later time to do this cleaner, maybe a method?
+            if(std::isnan((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])))
             {
               speed = "";
+            }
+            else if(std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) > max_speed_
+                    || std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) == 0.0)
+            {
+              speed = " S"+std::to_string(max_speed_);
             }
             else
             {
@@ -214,7 +218,6 @@ namespace arm_hw_integration{
             }
 
             command0 = command0 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
-//            ROS_INFO("Command 0: %s", command0.c_str());
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_1)] = point_iter->positions[i];
             break;
           }
@@ -223,10 +226,13 @@ namespace arm_hw_integration{
             std::pair<double,double> a(0,M_PI), b(500,2500);
             std::string speed;
 
-            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
-               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            if(std::isnan((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])))
             {
               speed = "";
+            }
+            else if(std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) > max_speed_
+                    || std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) == 0.0)            {
+              speed = " S"+std::to_string(max_speed_);
             }
             else
             {
@@ -234,7 +240,6 @@ namespace arm_hw_integration{
             }
 
             command1 = command1 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
-//            ROS_INFO("Command 1: %s", command1.c_str());
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_2)] = point_iter->positions[i];
             break;
           }
@@ -243,10 +248,13 @@ namespace arm_hw_integration{
             std::pair<double,double> a(0,-M_PI), b(500,2500);
             std::string speed;
 
-            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
-               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            if(std::isnan((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])))
             {
               speed = "";
+            }
+            else if(std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) > max_speed_
+                    || std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) == 0.0)            {
+              speed = " S"+std::to_string(max_speed_);
             }
             else
             {
@@ -254,7 +262,6 @@ namespace arm_hw_integration{
             }
 
             command2 = command2 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
-//            ROS_INFO("Command 2: %s", command2.c_str());
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_3)] = point_iter->positions[i];
             break;
           }
@@ -263,10 +270,13 @@ namespace arm_hw_integration{
             std::pair<double,double> a(-M_PI/2,M_PI/2), b(500,2500);
             std::string speed;
 
-            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
-               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            if(std::isnan((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])))
             {
               speed = "";
+            }
+            else if(std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) > max_speed_
+                    || std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) == 0.0)            {
+              speed = " S"+std::to_string(max_speed_);
             }
             else
             {
@@ -274,7 +284,6 @@ namespace arm_hw_integration{
             }
 
             command3 = command3 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
-//            ROS_INFO("Command 3: %s", command3.c_str());
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_4)] = point_iter->positions[i];
             break;
           }
@@ -283,18 +292,20 @@ namespace arm_hw_integration{
             std::pair<double,double> a(M_PI/2,-M_PI/2), b(500,2500);
             std::string speed;
 
-            if((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == -0.0  ||
-               (point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i]) == 0.0)
+            if(std::isnan((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])))
             {
               speed = "";
+            }
+            else if(std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) > max_speed_
+                    || std::abs((point_iter->velocities[i]/point_iter->positions[i])*map_value(a,b, point_iter->positions[i])) == 0.0)            {
+              speed = " S"+std::to_string(max_speed_);
             }
             else
             {
               speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
             }
-//          TODO: Address the issue with the gripper being mismatched with it's channel
+            //TODO: Address the issue with the gripper being mismatched with it's channel
             command4 = command4 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
-//            ROS_INFO("Command 4: %s", command4.c_str());
             current_states_.position[static_cast<int>(AL5DJoints::al5d_gripper)] = point_iter->positions[i];
             break;
           }
@@ -309,17 +320,17 @@ namespace arm_hw_integration{
 
       serial_->write(command_to_send);
 
-//      serial_->write("Q\r");
+      //      serial_->write("Q\r");
 
-//      std::string result = serial_->read(command_to_send.length()+1);
+      //      std::string result = serial_->read(command_to_send.length()+1);
 
-//      while(result == "+")
-//      {
-////        usleep(50);
-//        serial_->write("Q\r");
-//        result = serial_->read(command_to_send.length()+1);
-//        ROS_INFO("Result, %s \n", result.c_str());
-//      }
+      //      while(result == "+")
+      //      {
+      ////        usleep(50);
+      //        serial_->write("Q\r");
+      //        result = serial_->read(command_to_send.length()+1);
+      //        ROS_INFO("Result, %s \n", result.c_str());
+      //      }
 
       feedback_.header.stamp = ros::Time::now();
       feedback_.joint_names = joint_names;
@@ -331,14 +342,14 @@ namespace arm_hw_integration{
 
       point_iter++;
     }
-//TODO: See to fix up this preemption properly
-    result_.error_code = 0;
-    as_.setSucceeded(result_);
-//    if(success)
-//    {
-//      result_.error_code = 0;
-//      as_.setSucceeded(result_);
-//    }
+    //TODO: See to fix up this preemption properly
+    //    result_.error_code = 0;
+    //    as_.setSucceeded(result_);
+    if(success)
+    {
+      result_.error_code = 0;
+      as_.setSucceeded(result_);
+    }
 
   };
 }
