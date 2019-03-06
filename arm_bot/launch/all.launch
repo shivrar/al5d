@@ -1,5 +1,11 @@
 <launch>
-  <include file="$(find arm_bot)/launch/arm.launch"/>
+
+  <arg name="gazebo_sim" default="true"/>
+
+  <include file="$(find arm_bot)/launch/arm.launch">
+    <arg name="gazebo_sim" value="$(arg gazebo_sim)"/>
+  </include>
+<!--TODO: Look at generating a better motion planner in moveit or some other source-->
   <include file="$(find al5d_moveit_config)/launch/move_group.launch"/>
   <include file="$(find al5d_moveit_config)/launch/moveit_rviz.launch">
     <arg name="config" value="true"/>
