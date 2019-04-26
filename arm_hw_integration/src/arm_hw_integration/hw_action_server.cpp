@@ -23,7 +23,17 @@ namespace arm_hw_integration{
     action_name_(name)
   {
     //Make this a param and or reconfigurable
-    max_speed_ = 1000;
+    //max_speed_ = 1000;
+    if (private_nh_.getParam("arm_params/max_speed", max_speed_))
+    {
+      ROS_INFO("Max speed limit set");
+    }
+    else
+    {
+      ROS_FATAL("Failed to specify param 'arm_params/max_speed'. Shutting down ins_to_tf node!");
+      ros::shutdown();
+    }
+
     as_.start();
     InitialisePublishers();
     InitialiseTimers();
