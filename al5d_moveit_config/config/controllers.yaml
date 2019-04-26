@@ -1,7 +1,7 @@
 controller_manager_ns: /
 controller_list:
   - name: arm_controller
-    action_ns: follow_joint_trajectory
+    action_ns: /
     type: FollowJointTrajectory
     joints:
       - al5d_joint_1

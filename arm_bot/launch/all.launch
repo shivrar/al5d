@@ -1,6 +1,5 @@
 <launch>
-
-  <arg name="gazebo_sim" default="false"/>
+  <arg name="gazebo_sim" default="true"/>
 
   <include file="$(find arm_bot)/launch/arm.launch">
     <arg name="gazebo_sim" value="$(arg gazebo_sim)"/>
