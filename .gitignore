@@ -1,0 +1,4 @@
+.idea/*
+src/built/.idea/*
+*.pyc
+src/.idea/*
