@@ -7,7 +7,7 @@
 #include <memory>
 #include <map>
 #include <ros/console.h>
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <sensor_msgs/JointState.h>
 #include <actionlib/server/simple_action_server.h>
@@ -32,7 +32,7 @@ namespace arm_hw_integration{
         al5d_end_effector = 4
       };
 
-      AL5DArm(std::string name);
+      AL5DArm(const std::string& name);
 
       ~AL5DArm();
 
@@ -76,6 +76,6 @@ namespace arm_hw_integration{
 
 
   };
-};
+}
 
 #endif

@@ -1,5 +1,4 @@
 <launch>
-
   <arg name="gazebo_sim" default="true"/>
 
   <include file="$(find arm_bot)/launch/arm.launch">
