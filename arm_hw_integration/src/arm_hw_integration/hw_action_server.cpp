@@ -18,7 +18,7 @@ tVal map_value(std::pair<tVal,tVal> a, std::pair<tVal, tVal> b, tVal inVal)
 
 namespace arm_hw_integration{
 
-  AL5DArm::AL5DArm(std::string name):private_nh_("~"),
+  AL5DArm::AL5DArm(const std::string& name):private_nh_("~"),
     as_(ros::NodeHandle(), name, boost::bind(&AL5DArm::executeCB, this, _1), false),
     action_name_(name)
   {
@@ -39,22 +39,20 @@ namespace arm_hw_integration{
     InitialiseTimers();
     InitialiseSerial();
 
-  };
+  }
 
   AL5DArm::~AL5DArm()
-  {
-
-  };
+  = default;
 
   void AL5DArm::InitialiseSubscribers()
   {
 
-  };
+  }
 
   void AL5DArm::InitialisePublishers()
   {
     joint_pub_ = ros::NodeHandle().advertise<sensor_msgs::JointState>("joint_states", 10);
-  };
+  }
 
   void AL5DArm::InitialiseTimers()
   {
@@ -63,19 +61,19 @@ namespace arm_hw_integration{
     pub_period_ = ros::Duration(period);
 
     joint_timer_ = private_nh_.createTimer(pub_period_, boost::bind(&AL5DArm::timerCB, this, _1));
-  };
+  }
 
   void AL5DArm::timerCB(const ros::TimerEvent&)
   {
     current_states_.header.stamp = ros::Time::now();
     joint_pub_.publish(current_states_);
-  };
+  }
 
 
   int AL5DArm::convertJointAngleToPosition(int jointAngle)
   {
 
-  };
+  }
 
   void AL5DArm::InitialiseSerial()
   {
@@ -163,13 +161,13 @@ namespace arm_hw_integration{
       ros::shutdown();
     }
 
-  };
+  }
 
   void AL5DArm::executeCB(const control_msgs::FollowJointTrajectoryGoalConstPtr &goal)
   {
     std::vector<std::string> joint_names = goal->trajectory.joint_names;
     std::vector<trajectory_msgs::JointTrajectoryPoint> joint_points = goal->trajectory.points;
-    std::vector<trajectory_msgs::JointTrajectoryPoint>::iterator point_iter = joint_points.begin();
+    auto point_iter = joint_points.begin();
     std::map<std::string, AL5DArm::AL5DJoints>::iterator iter;
     bool success = true;
 
@@ -181,7 +179,7 @@ namespace arm_hw_integration{
       std::string command2 = "#2";
       std::string command3 = "#3";
       std::string command4 = "#5";
-      std::string command_to_send = "";
+      std::string command_to_send;
 
       if (as_.isPreemptRequested() || !ros::ok())
       {
@@ -227,7 +225,7 @@ namespace arm_hw_integration{
               speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
             }
 
-            command0 = command0 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+            command0+=" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_1)] = point_iter->positions[i];
             break;
           }
@@ -249,7 +247,7 @@ namespace arm_hw_integration{
               speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
             }
 
-            command1 = command1 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+            command1 +=" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_2)] = point_iter->positions[i];
             break;
           }
@@ -271,7 +269,7 @@ namespace arm_hw_integration{
               speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
             }
 
-            command2 = command2 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+            command2 +=" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_3)] = point_iter->positions[i];
             break;
           }
@@ -293,7 +291,7 @@ namespace arm_hw_integration{
               speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
             }
 
-            command3 = command3 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+            command3 +=" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
             current_states_.position[static_cast<int>(AL5DJoints::al5d_joint_4)] = point_iter->positions[i];
             break;
           }
@@ -315,7 +313,7 @@ namespace arm_hw_integration{
               speed = " S" +std::to_string((int)round(std::abs((point_iter->velocities[i]/point_iter->positions[i]) * map_value(a,b, point_iter->positions[i]))));
             }
             //TODO: Address the issue with the gripper being mismatched with it's channel
-            command4 = command4 +" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
+            command4 +=" P"+ std::to_string((int)round(map_value(a,b, point_iter->positions[i]))) + speed;
             current_states_.position[static_cast<int>(AL5DJoints::al5d_gripper)] = point_iter->positions[i];
             break;
           }
@@ -324,7 +322,7 @@ namespace arm_hw_integration{
 
       }
 
-      command_to_send = command0+" "+command1+" "+command2+" "+command3+" "+command4+"\r";
+      command_to_send +=" "+command1+" "+command2+" "+command3+" "+command4+"\r";
 
       ROS_INFO("Final command: %s", command_to_send.c_str());
 
@@ -361,5 +359,5 @@ namespace arm_hw_integration{
       as_.setSucceeded(result_);
     }
 
-  };
+  }
 }

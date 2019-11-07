@@ -3,20 +3,20 @@
 
   <xacro:property name="M_PI" value="3.14159"/>
 
-  <property name="base_height" value="0.043" />
-  <property name="base_radius" value="0.048" />
-  <property name="link1_height" value="0.006" />
-  <property name="link1_radius" value="0.048" />
-  <property name="link2_offset" value="0.022" />
-  <property name="link2_length" value="0.14605" />
-  <property name="link3_length" value="0.187325" />
-  <property name="link4_length" value="0.032" />
-  <property name="gripper_offset" value="0.016" />
+  <xacro:property name="base_height" value="0.043" />
+  <xacro:property name="base_radius" value="0.048" />
+  <xacro:property name="link1_height" value="0.006" />
+  <xacro:property name="link1_radius" value="0.048" />
+  <xacro:property name="link2_offset" value="0.022" />
+  <xacro:property name="link2_length" value="0.14605" />
+  <xacro:property name="link3_length" value="0.187325" />
+  <xacro:property name="link4_length" value="0.032" />
+  <xacro:property name="gripper_offset" value="0.016" />
 
   <xacro:macro name="lynxmotion_al5d" params="prefix parent_link rate:=50 *origin">
     <!-- attach -->
     <joint name="arm_base_joint" type="fixed">
-      <insert_block name="origin" />
+      <xacro:insert_block name="origin" />
       <parent link="${parent_link}"/>
       <child link="${prefix}base_link" />
     </joint>
