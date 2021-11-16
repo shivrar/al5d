@@ -30,7 +30,7 @@ namespace arm_hw_integration{
     }
     else
     {
-      ROS_FATAL("Failed to specify param 'arm_params/max_speed'. Shutting down ins_to_tf node!");
+      ROS_FATAL("Failed to specify param 'arm_params/max_speed'. Shutting down serial node!");
       ros::shutdown();
     }
 
